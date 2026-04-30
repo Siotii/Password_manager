@@ -1,15 +1,41 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+from tkinter import messagebox
+import database
+import sqlite3
+
+conn = sqlite3.connect("padflock.db")
+cursor = conn.cursor()
+
+cursor.execute("SELECT * FROM users")
+print(cursor.fetchall())
+
+conn.close()
 
 
 def check_login():
     username = username_entry.get()
     password = password_entry.get()
 
-    print("Login clicked")
+    if database.login_user(username, password):
+        messagebox.showinfo("Success", "Login successful")
+    else:
+        messagebox.showerror("Error", "Invalid username or password")
 
 def register():
-    print("Register clicked")
+    username = username_entry.get()
+    password = password_entry.get()
+
+    if username == "" or password == "":
+        messagebox.showerror("Error", "Fill all fields")
+        return
+
+    success = database.register_user(username, password)
+
+    if success:
+        messagebox.showinfo("Success", "User registered successfully")
+    else:
+        messagebox.showerror("Error", "Username already exists")
 
 root = tk.Tk()
 root.title("PadFlock")
@@ -57,4 +83,5 @@ register_btn = tk.Button(root, text="Register", width=12, command=register)
 canvas.create_window(200, 320, window=login_btn)
 canvas.create_window(350, 320, window=register_btn)
 
+database.init_db()
 root.mainloop()
