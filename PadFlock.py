@@ -59,3 +59,4 @@ canvas.create_window(225, 210, window=login_btn)
 root.mainloop()
 
 print("hello")
+print("1")
