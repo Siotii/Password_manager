@@ -422,6 +422,13 @@ class VaultPage(tk.Frame):
             width=12,
         ).pack(side="left", padx=8, ipady=6)
         styled_button(actions, "Save", self.save, width=11).pack(side="left", ipady=6)
+        styled_button(
+            actions,
+            "Delete",
+            self.delete_selected,
+            color="#d9534f",
+            width=11,
+        ).pack(side="left", padx=8, ipady=6)
 
         tk.Label(
             self,
@@ -514,6 +521,30 @@ class VaultPage(tk.Frame):
         self.update_password_status()
         self.load_data()
 
+    def delete_selected(self):
+        selected = self.table.selection()
+
+        if not selected:
+            messagebox.showerror("No Selection", "Select a saved password to delete.")
+            return
+
+        item_id = selected[0]
+        site, username, _password = self.table.item(item_id, "values")
+
+        confirmed = messagebox.askyesno(
+            "Delete Password",
+            f"Delete the saved password for {site} ({username})?",
+        )
+        if not confirmed:
+            return
+
+        if database.delete_password(self.app.user_id, int(item_id)):
+            self.table.delete(item_id)
+            messagebox.showinfo("Deleted", "Saved password deleted.")
+        else:
+            messagebox.showerror("Delete Failed", "This password could not be deleted.")
+            self.load_data()
+
     def load_data(self):
         for item in self.table.get_children():
             self.table.delete(item)
@@ -521,8 +552,8 @@ class VaultPage(tk.Frame):
         if not self.app.user_id:
             return
 
-        for site, user, password in database.get_passwords(self.app.user_id):
-            self.table.insert("", tk.END, values=(site, user, password))
+        for password_id, site, user, password in database.get_passwords(self.app.user_id):
+            self.table.insert("", tk.END, iid=password_id, values=(site, user, password))
 
 
 
